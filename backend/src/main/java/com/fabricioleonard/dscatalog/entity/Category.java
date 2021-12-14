@@ -1,4 +1,4 @@
-package com.fabricioleonard.dscatalog.entities;
+package com.fabricioleonard.dscatalog.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
