@@ -15,12 +15,8 @@ import java.util.List;
 @RequestMapping(value = "/categories")
 public class CategoryResource {
 
-    private CategoryService service;
-
     @Autowired
-    public CategoryResource(CategoryService service) {
-        this.service = service;
-    }
+    private CategoryService service;
 
     @GetMapping
     public ResponseEntity<List<Category>> findAll(){
