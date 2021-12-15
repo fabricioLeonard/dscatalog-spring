@@ -3,8 +3,11 @@ package com.fabricioleonard.dscatalog.service;
 import com.fabricioleonard.dscatalog.dto.CategoryDTO;
 import com.fabricioleonard.dscatalog.entity.Category;
 import com.fabricioleonard.dscatalog.respository.CategoryRepository;
+import com.fabricioleonard.dscatalog.service.exception.DatabaseException;
 import com.fabricioleonard.dscatalog.service.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
+
     @Autowired
     private CategoryRepository repository;
 
@@ -23,6 +27,7 @@ public class CategoryService {
         List<Category> list = repository.findAll();
         return list.stream().map(cat -> new CategoryDTO(cat)).collect(Collectors.toList());
     }
+
     @Transactional(readOnly = true)
     public CategoryDTO findById(Long id) {
         Optional<Category> objeto = repository.findById(id);
@@ -41,13 +46,23 @@ public class CategoryService {
 
     @Transactional
     public CategoryDTO update(Long id, CategoryDTO dto) {
-        try{
+        try {
             Category entity = repository.getById(id);
             entity.setName(dto.getName());
             entity = repository.save(entity);
             return new CategoryDTO(entity);
-        } catch (EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException("Id not found " + id);
+        }
+    }
+
+    public void delete(Long id) {
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResourceNotFoundException("Id not found " + id);
+        } catch (DataIntegrityViolationException e){
+            throw new DatabaseException("Integrity violation");
         }
     }
 }
