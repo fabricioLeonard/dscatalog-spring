@@ -1,7 +1,10 @@
 package com.fabricioleonard.dscatalog.service;
 
+import com.fabricioleonard.dscatalog.dto.CategoryDTO;
 import com.fabricioleonard.dscatalog.dto.ProductDTO;
+import com.fabricioleonard.dscatalog.entity.Category;
 import com.fabricioleonard.dscatalog.entity.Product;
+import com.fabricioleonard.dscatalog.respository.CategoryRepository;
 import com.fabricioleonard.dscatalog.respository.ProductRepository;
 import com.fabricioleonard.dscatalog.service.exception.DatabaseException;
 import com.fabricioleonard.dscatalog.service.exception.ResourceNotFoundException;
@@ -23,6 +26,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository repository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public List<ProductDTO> findAll() {
@@ -47,7 +53,7 @@ public class ProductService {
     @Transactional
     public ProductDTO insert(ProductDTO dto) {
         Product entity = new Product();
-        //entity.setName(dto.getName());
+        copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
         return new ProductDTO(entity);
     }
@@ -56,7 +62,7 @@ public class ProductService {
     public ProductDTO update(Long id, ProductDTO dto) {
         try {
             Product entity = repository.getById(id);
-            //entity.setName(dto.getName());
+            copyDtoToEntity(dto, entity);
             entity = repository.save(entity);
             return new ProductDTO(entity);
         } catch (EntityNotFoundException e) {
@@ -74,5 +80,19 @@ public class ProductService {
         }
     }
 
+    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+        entity.setName(dto.getName());
+        entity.setDate(dto.getDate());
+        entity.setDescription(dto.getDescription());
+        entity.setPrice(dto.getPrice());
+        entity.setImg_url(dto.getImg_url());
+
+        entity.getCategories().clear();
+
+        for(CategoryDTO categoryDTO: dto.getCategories()){
+            Category category = categoryRepository.getById(categoryDTO.getId());
+            entity.getCategories().add(category);
+        }
+    }
 
 }
